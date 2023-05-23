@@ -1,98 +1,98 @@
+import re
+
 from django.core.validators import EmailValidator
 from rest_framework import serializers
-from rest_framework.validators import UniqueValidator, UniqueTogetherValidator
+from rest_framework.validators import UniqueValidator
 
-from api_yamdb.users.models import User
+from users.models import User
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
     """
     User registration serializer.
     """
-    email = serializers.EmailField(
-        max_length=254,
+    username = serializers.CharField(
+        max_length=150,
         required=True,
-        write_only=True,
+    )
+    email = serializers.EmailField(
+        required=True,
+        max_length=254,
         validators=[
             EmailValidator(),
-            UniqueValidator(queryset=User.objects.all())
-        ],
-    )
-    username = serializers.CharField(
-        max_length=150,
-        required=True,
-        write_only=True,
-        validators=[
-            UniqueValidator(queryset=User.objects.all())
-        ],
-    )
-
-    class Meta:
-        model = User
-        fields = ('email', 'username')
-        validators = [
-            UniqueTogetherValidator(
-                queryset=User.objects.all(),
-                fields=['username', 'email'],
-                message='Пользователь с таким username и email уже сукщетсвует!',
-            )
         ]
+    )
 
     def validate_username(self, value):
-        if value == 'me':
-            raise serializers.ValidationError('Нельзя использовать me как имя пользователя!')
-        if value != r'^[\w.@+-]+\z':
-            raise serializers.ValidationError('Неправильное имя пользователя!')
+        if value == "me":
+            raise serializers.ValidationError("Username 'me' is not valid")
+        if not re.match(r"^[\w.@+-]+$", value):
+            raise serializers.ValidationError
         return value
 
+    def validate(self, attrs):
+        username = attrs['username']
+        email = attrs['email']
 
-class ConfirmRegistrationSerializer(serializers.ModelSerializer):
+        if User.objects.filter(username=username).exists():
+            user = User.objects.get(username=username)
+            if user.email != email:
+                raise serializers.ValidationError('Wrong email!')
+
+        if User.objects.filter(email=email).exists():
+            user = User.objects.get(email=email)
+            if user.username != username:
+                raise serializers.ValidationError('Wrong username!')
+
+        return attrs
+
+    class Meta:
+        fields = ("username", "email")
+        model = User
+
+
+class ConfirmRegistrationSerializer(serializers.Serializer):
+    """
+    Serializer for token view.
+    """
     username = serializers.CharField(
         max_length=150,
         required=True,
         write_only=True,
-        validators=[
-            UniqueValidator(queryset=User.objects.all())
-        ],
+        allow_blank=False
     )
     confirmation_code = serializers.CharField(
         required=True,
         write_only=True,
+        allow_blank=False,
+        allow_null=False,
     )
-
-    class Meta:
-        model = User
-
-    def validate_username(self, value):
-        if value == 'me':
-            raise serializers.ValidationError('Нельзя использовать me как имя пользователя!')
-        if value != r'^[\w.@+-]+\z':
-            raise serializers.ValidationError('Неправильное имя пользователя!')
-        return value
 
 
 class UserSerializer(serializers.ModelSerializer):
-    username = serializers.SlugRelatedField(
+    """
+    This serializer works with User model.
+    """
+    username = serializers.CharField(
+        max_length=150,
         required=True,
-        slug_field='username',
-        queryset=User.objects.all(),
         validators=[
             UniqueValidator(queryset=User.objects.all())
         ]
     )
     email = serializers.EmailField(
+        max_length=254,
         validators=[
             UniqueValidator(queryset=User.objects.all())
-        ]
+        ],
     )
+
+    def validate_username(self, value):
+        if not re.match(r"^[\w.@+-]+$", value):
+            raise serializers.ValidationError
+        return value
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'first_name', 'last_name', 'bio', 'role')
-        validators = [
-            UniqueTogetherValidator(
-                queryset=User.objects.all(),
-                fields=['username', 'email'],
-                message='Пользователь с таким username и email уже сукщетсвует!',
-            )
-        ]
+        fields = ('username', 'email', 'first_name',
+                  'last_name', 'bio', 'role')

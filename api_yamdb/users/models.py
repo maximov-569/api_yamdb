@@ -3,11 +3,12 @@ from django.db import models
 from django.utils.translation import gettext_lazy
 
 
-class UserManager(models.Manager):
-    pass
-
-
 class User(AbstractUser):
+    """
+    Add two new fields:
+    bio - additional info about user
+    role - one three permission type roles
+    """
     bio = models.TextField(blank=True, null=True)
 
     class Role(models.TextChoices):
@@ -21,4 +22,13 @@ class User(AbstractUser):
         default=Role.USER,
     )
 
-    objects = UserManager()
+    @property
+    def is_moder(self):
+        return self.role == self.Role.MODERATOR
+
+    @property
+    def is_admin(self):
+        return self.role == self.Role.ADMINISTRATOR
+
+    class Meta:
+        ordering = ['id']
