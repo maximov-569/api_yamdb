@@ -8,11 +8,11 @@ from users.views import (
 )
 
 
-router = routers.DefaultRouter()
-router.register(r'signup', ResgisterViewSet, basename='registration')
-router.register('', UserViewSet)
+router_v1 = routers.DefaultRouter()
+router_v1.register(r'signup', ResgisterViewSet, basename='registration')
+router_v1.register('', UserViewSet)
 
 urlpatterns = [
     path('token/', token_view, name='token'),
-    path('', include(router.urls))
+    path('', include(router_v1.urls))
 ]
