@@ -25,7 +25,7 @@ class Title(models.Model):
     """
     Общая информация о произведении
     """
-    name = models.CharField(max_length=200, required=True)
+    name = models.CharField(max_length=256, required=True)
     year = models.IntegerField(required=True)  # Год выпуска
     genre = models.ManyToManyField(Genre, related_name='titles', verbose_name='Жанр', required=True)
     category = models.ForeignKey(Categories, on_delete=models.SET_NULL, related_name='titles',
