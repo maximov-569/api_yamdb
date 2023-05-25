@@ -25,12 +25,15 @@ class Title(models.Model):
     """
     Общая информация о произведении
     """
-    name = models.CharField(max_length=200)
-    author = models.TextField(max_length=200)
-    year = models.IntegerField()  # Год выпуска
-    genre = models.ManyToManyField(Genre, related_name='titles', verbose_name='Жанр')
+    name = models.CharField(max_length=200, required=True)
+    year = models.IntegerField(required=True)  # Год выпуска
+    genre = models.ManyToManyField(Genre, related_name='titles', verbose_name='Жанр', required=True)
     category = models.ForeignKey(Categories, on_delete=models.SET_NULL, related_name='titles',
-                                 verbose_name='Категория')
+                                 verbose_name='Категория', required=True)
+    description = models.TextField(max_length=255, null=True, blank=True)
+
+    class Meta:
+        ordering = ('name',)
 
     def __str__(self):
         return self.name
