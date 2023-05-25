@@ -11,7 +11,8 @@ class TitleViewSet(ModelViewSet):
     На выходе имеем набор всех произведении
     """
     queryset = Title.onjects.annotate(rating=Avg('reviews__score')).all()
-    permission_classes = (Moder, Admin, Owner)
+    permission_classes = (Moder, Admin)
+    serializer_class = (WriteTitleSerializer, ReadTitleSerializer)
 
     def get_serializers_class(self):
         if self.request.method in ['PATCH', 'POST', 'PUT']:
@@ -24,6 +25,7 @@ class GenreViewSet(ModelViewSet):
     На выходе имеем набор всех жанров
     """
     queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
 
 
 class CategoryViewSet(ModelViewSet):
@@ -31,3 +33,4 @@ class CategoryViewSet(ModelViewSet):
     На выходе имеем набор всех категорий
     """
     queryset = Category.objects.all()
+    serializer_class = CategoriesSerializer
