@@ -27,23 +27,23 @@ class CategoriesSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        fields = ('name', 'slug',)
+        fields = ('slug', 'name',)
         model = Category
 
 
 class ReadTitleSerializer(serializers.ModelSerializer):
-    genre = GenreSerializer(read_only=True)
+    genres = GenreSerializer(many=True, read_only=True)
     category = CategoriesSerializer(read_only=True)
     rating = serializers.IntegerField(read_only=True)
 
     class Meta:
-        fields = '__all__'
+        fields = ('id', 'name', 'year', 'rating', 'description', 'genres', 'category',)
         model = Title
 
 
 class WriteTitleSerializer(serializers.ModelSerializer):
     genre = serializers.SlugRelatedField(
-        write_only=True, queryset=Genre.objects.all(), slug_field='slug')
+        write_only=True, queryset=Genre.objects.all(), slug_field='slug', many=True)
     category = serializers.SlugRelatedField(
         write_only=True, queryset=Category.objects.all(), slug_field='slug')
 
@@ -72,7 +72,7 @@ class ReviewsSerializer(serializers.ModelSerializer):
         if (
             request.method != 'PATCH'
             and Review.objects.filter(
-                title=title, user=request.user
+                title=title, author=request.user
             ).exists()
         ):
             raise ValidationError(
@@ -82,7 +82,7 @@ class ReviewsSerializer(serializers.ModelSerializer):
 
     def validate_score(self, value):
         """Validate the score value."""
-        if value < 1 and value > 10:
+        if not 1 <= value <= 10:
             raise ValidationError(
                 'Please rate the title from 1 to 10!')
         return value

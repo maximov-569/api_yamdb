@@ -5,10 +5,10 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.pagination import PageNumberPagination
 from rest_framework import mixins
 
-from reviews.models import Title, Category, Genre
+from reviews.models import Title, Category, Genre, Review
 from .permissions import *
 from .serializers import *
-from users.permissions import ReadOnlyOrAdmin
+from users.permissions import ReadOnlyOrAdmin, Owner
 
 
 # Create your views here.
@@ -18,12 +18,12 @@ class TitleViewSet(ModelViewSet):
     """
     На выходе имеем набор всех произведении
     """
-    #queryset = Title.objects.annotate(rating=Avg('reviews__score')).all()
-    queryset = Title.objects.all()
+    queryset = Title.objects.annotate(rating=Avg('reviews__score')).all()
+    #queryset = Title.objects.all()
     permission_classes = (ReadOnlyOrAdmin,)
     pagination_class = PageNumberPagination
     filter_backends = (filters.SearchFilter,)
-    search_fields = ('name',)
+    search_fields = ('name', 'year', 'genre__slug', 'category__slug',)
 
     def get_serializer_class(self):
         if self.request.method in ['PATCH', 'POST', 'PUT']:
