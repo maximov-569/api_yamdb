@@ -1,18 +1,33 @@
 from rest_framework import serializers
 from rest_framework.serializers import ValidationError
+from rest_framework.validators import UniqueValidator
 
 from reviews.models import Category, Comment, Genre, Review, Title
 
 
 class GenreSerializer(serializers.ModelSerializer):
+    slug = serializers.SlugField(
+        validators=[
+            UniqueValidator(queryset=Genre.objects.all())
+        ],
+        max_length=50,
+    )
+
     class Meta:
-        fields = '__all__'
+        fields = ('slug', 'name')
         model = Genre
 
 
 class CategoriesSerializer(serializers.ModelSerializer):
+    slug = serializers.SlugField(
+        validators=[
+            UniqueValidator(queryset=Category.objects.all())
+        ],
+        max_length=50,
+    )
+
     class Meta:
-        fields = '__all__'
+        fields = ('name', 'slug',)
         model = Category
 
 
@@ -28,7 +43,7 @@ class ReadTitleSerializer(serializers.ModelSerializer):
 
 class WriteTitleSerializer(serializers.ModelSerializer):
     genre = serializers.SlugRelatedField(
-        write_only=True, queryset=Genre.objects.all, slug_field='Slug')
+        write_only=True, queryset=Genre.objects.all(), slug_field='slug')
     category = serializers.SlugRelatedField(
         write_only=True, queryset=Category.objects.all(), slug_field='slug')
 

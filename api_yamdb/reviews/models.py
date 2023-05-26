@@ -7,20 +7,36 @@ class Genre(models.Model):
     """
     Информация о жанре произведения
     """
-    genre_name = models.CharField(max_length=200)
+    slug = models.SlugField(
+        max_length=50
+    )
+    name = models.CharField(
+        max_length=256
+    )
+
+    class Meta:
+        ordering = ['id']
 
     def __str__(self):
-        return self.genre_name
+        return self.name
 
 
 class Category(models.Model):
     """
     Категория произведения (литературное, музыкальное и т.д.)
     """
-    category_name = models.CharField(max_length=200)
+    slug = models.SlugField(
+        max_length=50
+    )
+    name = models.CharField(
+        max_length=256
+    )
+
+    class Meta:
+        ordering = ['id']
 
     def __str__(self):
-        return self.category_name
+        return self.name
 
 
 class Title(models.Model):
@@ -37,7 +53,7 @@ class Title(models.Model):
     description = models.TextField(max_length=255, null=True, blank=True)
 
     class Meta:
-        ordering = ('name',)
+        ordering = ['id']
 
     def __str__(self):
         return self.name
