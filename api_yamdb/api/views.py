@@ -1,29 +1,35 @@
 from django.shortcuts import get_object_or_404
 from django.db.models import Avg
-from rest_framework import permissions, viewsets, filters
+from rest_framework import viewsets, filters
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.pagination import PageNumberPagination
 from rest_framework import mixins
+from django_filters.rest_framework import DjangoFilterBackend
 
-from reviews.models import Title, Category, Genre, Review
-from .permissions import *
-from .serializers import *
+from reviews.models import Title, Category, Genre, Review, Comment
+
+from .filters import TitleFilter
+from .serializers import (
+    WriteTitleSerializer,
+    ReadTitleSerializer,
+    GenreSerializer,
+    CommentSerializer,
+    ReviewsSerializer,
+    CategoriesSerializer,
+)
 from users.permissions import ReadOnlyOrAdmin, Owner
-
-
-# Create your views here.
 
 
 class TitleViewSet(ModelViewSet):
     """
     На выходе имеем набор всех произведении
     """
-    queryset = Title.objects.annotate(rating=Avg('reviews__score')).all()
-    #queryset = Title.objects.all()
+    queryset = Title.objects.annotate(
+        rating=Avg('reviews__score')).order_by('id')
     permission_classes = (ReadOnlyOrAdmin,)
     pagination_class = PageNumberPagination
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ('name', 'year', 'genre__slug', 'category__slug',)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = TitleFilter
 
     def get_serializer_class(self):
         if self.request.method in ['PATCH', 'POST', 'PUT']:
