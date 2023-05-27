@@ -1,42 +1,72 @@
 from django.shortcuts import get_object_or_404
 from django.db.models import Avg
-from rest_framework import permissions, viewsets
+from rest_framework import viewsets, filters
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.pagination import PageNumberPagination
+from rest_framework import mixins
+from django_filters.rest_framework import DjangoFilterBackend
 
-from reviews.models import Title, Category, Genre
-from .permissions import *
-from .serializers import *
-# Create your views here.
+from reviews.models import Title, Category, Genre, Review, Comment
+
+from .filters import TitleFilter
+from .serializers import (
+    WriteTitleSerializer,
+    ReadTitleSerializer,
+    GenreSerializer,
+    CommentSerializer,
+    ReviewsSerializer,
+    CategoriesSerializer,
+)
+from users.permissions import ReadOnlyOrAdmin, Owner
 
 
 class TitleViewSet(ModelViewSet):
     """
     На выходе имеем набор всех произведении
     """
-    queryset = Title.objects.annotate(rating=Avg('reviews__score')).all()
-    permission_classes = (Moder, Admin)
-    serializer_class = (WriteTitleSerializer, ReadTitleSerializer)
+    queryset = Title.objects.annotate(
+        rating=Avg('reviews__score')).order_by('id')
+    permission_classes = (ReadOnlyOrAdmin,)
+    pagination_class = PageNumberPagination
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = TitleFilter
 
-    def get_serializers_class(self):
+    def get_serializer_class(self):
         if self.request.method in ['PATCH', 'POST', 'PUT']:
             return WriteTitleSerializer
         return ReadTitleSerializer
 
 
-class GenreViewSet(ModelViewSet):
+class GenreViewSet(mixins.ListModelMixin,
+                   mixins.CreateModelMixin,
+                   mixins.DestroyModelMixin,
+                   viewsets.GenericViewSet):
     """
     На выходе имеем набор всех жанров
     """
+    lookup_field = 'slug'
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
+    pagination_class = PageNumberPagination
+    permission_classes = (ReadOnlyOrAdmin,)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
 
 
-class CategoryViewSet(ModelViewSet):
+class CategoryViewSet(mixins.ListModelMixin,
+                      mixins.CreateModelMixin,
+                      mixins.DestroyModelMixin,
+                      viewsets.GenericViewSet):
     """
     На выходе имеем набор всех категорий
     """
+    lookup_field = 'slug'
     queryset = Category.objects.all()
     serializer_class = CategoriesSerializer
+    permission_classes = (ReadOnlyOrAdmin,)
+    pagination_class = PageNumberPagination
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
 
 
 class ReviewsViewSet(viewsets.ModelViewSet):
