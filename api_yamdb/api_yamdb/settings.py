@@ -13,6 +13,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+DEFAULT_SERVICE_ADMIN_EMAIL = 'admin@yamdb.ru',
+
 
 # Application definition
 

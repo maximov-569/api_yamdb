@@ -8,6 +8,7 @@ from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
+from api_yamdb.settings import DEFAULT_SERVICE_ADMIN_EMAIL
 from users.models import User
 from users.permissions import Admin
 from users.serializers import (
@@ -46,7 +47,7 @@ class ResgisterViewSet(viewsets.GenericViewSet,
         send_mail(
             'Registration',
             f'Your confirmation code: {confirmation_code}',
-            from_email='admin@yamdb.ru',
+            from_email=DEFAULT_SERVICE_ADMIN_EMAIL,
             recipient_list=[user.email]
         )
         headers = self.get_success_headers(serializer.data)
