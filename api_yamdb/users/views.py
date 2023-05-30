@@ -93,26 +93,7 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = (Admin,)
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
-
-    # Reassembled update to force PUT deny.
-    def update(self, request, *args, **kwargs):
-        if request.method == 'PUT':
-            return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-        partial = kwargs.pop('partial', False)
-        instance = self.get_object()
-        serializer = self.get_serializer(
-            instance,
-            data=request.data,
-            partial=partial,
-        )
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-
-        if getattr(instance, '_prefetched_objects_cache', None):
-            instance._prefetched_objects_cache = {}
-
-        return Response(serializer.data)
+    http_method_names = ['get', 'post', 'patch', 'delete']
 
     # Through this method user can get and patch it own profile.
     @action(
