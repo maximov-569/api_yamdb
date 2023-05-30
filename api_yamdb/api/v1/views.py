@@ -3,9 +3,9 @@ from django.db.models import Avg
 from rest_framework import viewsets, filters
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.pagination import PageNumberPagination
-from rest_framework import mixins
 from django_filters.rest_framework import DjangoFilterBackend
 
+from .mixins import ModelMixinSet
 from reviews.models import Title, Category, Genre, Review, Comment
 
 from .filters import TitleFilter
@@ -37,10 +37,7 @@ class TitleViewSet(ModelViewSet):
         return ReadTitleSerializer
 
 
-class GenreViewSet(mixins.ListModelMixin,
-                   mixins.CreateModelMixin,
-                   mixins.DestroyModelMixin,
-                   viewsets.GenericViewSet):
+class GenreViewSet(ModelMixinSet):
     """
     На выходе имеем набор всех жанров
     """
@@ -53,10 +50,7 @@ class GenreViewSet(mixins.ListModelMixin,
     search_fields = ('name',)
 
 
-class CategoryViewSet(mixins.ListModelMixin,
-                      mixins.CreateModelMixin,
-                      mixins.DestroyModelMixin,
-                      viewsets.GenericViewSet):
+class CategoryViewSet(ModelMixinSet):
     """
     На выходе имеем набор всех категорий
     """
