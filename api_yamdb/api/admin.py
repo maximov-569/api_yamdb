@@ -3,7 +3,14 @@ from django.contrib import admin
 from reviews.models import Title, Genre, Category, Review, Comment
 
 
-admin.site.register(Title)
+class TitleAdmin(admin.ModelAdmin):
+    list_display = (
+        'pk',
+        'name',
+    )
+
+
+admin.site.register(Title, TitleAdmin)
 admin.site.register(Genre)
 admin.site.register(Category)
 admin.site.register(Review)
